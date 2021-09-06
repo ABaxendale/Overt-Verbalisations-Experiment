@@ -1,0 +1,1166 @@
+# Operation Span (Working Memory Test)
+# This test is a free recall adaptation of the "Unsworth, N., Heitz, R. P., Schrock, J. C., & Engle, R. W. (2005).
+# An automated version of the operation span task. Behavior research methods, 37(3), 498-505."
+# Automated Operation Span (AOSpan).
+
+# NOTE: the AOSpan is based on using a mouse, whereas this task uses a keyboard and features
+# some variances. This task uses a free recall method of allowing the typing of the letters and sum
+# answers, whereas the AOSpan presents a true/false answer to sums, alongside a letter
+# matrix to choose from. Additionally, time limits on sum reading and sum answering is set at 10 seconds
+# each (which can be altered if desired) instead of mean response time +2.5SD. Letter input is also
+# untimed in this task however a 100 second limit has been put on the input screen to prevent participants
+# from using the input screen as a rest point (rest points are given at the start of each block).
+
+# Otherwise, this task uses the same sum format, letters and experimental layout. Sums are shown with
+# a time limit, an answer is given and a letter is shown for 800ms, repeat until sum limit, then
+# recall of letters in order. Sum limits are 3, 4, 5, 6 and 7 sums to answer/letters to recall.
+# 3 trials of each sum limit are performed (the 3 trials are presented in random order),
+# sum limits are pseudorandomised for counterbalancing - the order of blocks have been defined
+# in the blockorder by allocating each of the 5 tasks using a balanced Latin Square to ensure
+# differential ordering if each task.
+# Over the 3, 4, 5, 6 and 7 span tasks with 3 trials per there is a total of 75 sums and letters used,
+# the highest (absolute) score possible would therefore be 75
+
+# Results will show 3 columns featuring the task name (e.g. sum3 = 3 sums/letters), response
+# correctness (1 = correct, 2 = incorrect, 3 = ran out of time) and reaction times (in ms).
+# All sums and letters need to be correct for a trial to count toward the Span score - this is known
+# as an 'absolute score' which is calculated automatically at the end of each block. An absolute score
+# is the sum of all correct trials, with the sum being the 'n' (i.e. in the 5 sum trial if all sums
+# and letters are correct then the absolute score would be +5, if only 4 sums were correct and the
+# letters are correct then it would not change the score), the letter score is shown in the 2nd column by
+# the absolute score, and reports the total amount of full letter scores correct regardless of math
+# sum completion (this is a useful measure to account for WM regardless of math skill).
+# an example of a set of data for 3 sum trials would be as follows:
+# sum3  1   1450   (taskname, correct response, 1450ms RT - this is a sum trial)
+# sum3  1   1539   (taskname, correct response, 1539ms RT - this is a sum trial)
+# sum3  1   1394   (taskname, correct response, 1394ms RT - this is a sum trial)
+# sum3  1   3209   (taskname, correct response, 3209ms RT - this is the letter recall)
+# 4 (this is a count of how many trials were correct, sum total + recall phase)
+# 3 3 (these two represent the absolute score and letter score, which will update across all trials to provide a total sum)
+# sum 3 2   1429  (taskname, incorrect response, 1429ms RT - this is a sum trial for the next trial)
+
+# Note: Traditionally an 85% accuracy minimum is used to cull flawed data, however recent research
+# suggests this cap to be arbitrary and pointless "Đokić, R., Koso-Drljević, M., & Đapo, N. (2018).
+# Working memory span tasks: Group administration and omitting accuracy criterion do not change
+# metric characteristics. PloS one, 13(10), e0205169."
+
+# Basic code has been annotated in the first half of the code, so it should make some sense to
+# those who are not experienced in using Psytoolkit
+
+options
+  fullscreen
+  resolution 1366 768
+  # This makes sure the task is the only thing on screen (to avoid distractions) and sets a forced
+  # resolution size that should fit small laptop screens. This feature is not available on the Safari 
+  # browser so it must be turned off in the survey options. Delete the "fullscreen" line if you wish to keep Safari users.
+
+
+fonts
+  arial 50
+  # A clear, sizeable font used for all tasks, increasing font size may cause the text participants type to overlap
+
+
+bitmaps
+  Practice_instruction1
+  Practice_instruction2
+  Practice_instruction3
+  Instruction
+  Letters
+  Sums
+  Task_Outline
+  # The images used in the testing, all are instructions pages. All documents are uploaded on the 'view
+  # files' button below this window
+
+
+# Tables show the layout of the stimuli and are listed as columns labeled by @ signs followed by a number
+# such as @1 or @2. Each trial is set up as a row in the table, and columns represent the stimuli.
+# A specific order has not been specified so the rows will be read in a random order.
+#@1 letter1   @2 letter2   @3 answer input
+table practice_trial_letters                    # The name of the table that will be used in the task
+  "l" "k" "lk"                                  # The stimuli are surrounded with quotation marks to denote that they
+  "n" "l" "nl"                                  # represent a word and not variables or names of bitmaps/videos/sounds
+  "q" "h" "qh"
+  "j" "q" "jq"
+  "p" "t" "pt"
+
+
+task letter_practice                                                    # The start of the first practice block
+  table practice_trial_letters                                          # Calling the table that was described above
+  keys f h j k l n p q r s t y enter space                              # Allows all letters used in task as inputs
+  delay 500                                                             # Gives half a second before the task starts
+  show text @1                                                          # Shows the first letter
+  delay 800                                                             # Waits for 800ms with letter on screen
+  clear screen                                                          # Removes the letter
+  delay 500                                                             # Wait 500ms before the next trial starts
+  show text @2                                                          # Shows the second letter
+  delay 800                                                             # Leaves on screen for 800ms
+  clear screen                                                          # Removes the letter
+ # The following few lines creates the letter input screen
+  show text "Type the letters and press Enter" -200 -200   0 255 0      # Shows instruction
+  text color white                                                      # All text will be shown in white
+  readkeys option size 2                                                # Limits input to 2 characters
+  readkeys option placeholders 40 40                                    # Shows inputs on screen
+  readkeys @3 100000                                                    # Allows 100 seconds for letter input - this should be untimed however an extreme upper limit is used to allow the experiment to continue if there is an issue with this specific trial
+  clear screen                                                          # removes everything from the screen
+  if STATUS == CORRECT                                                  # If correct answer is given then the following actions will occur
+    show text "Correct"                                                 # Tells the participant their response is correct
+    set &letter increase 1                                              # Increases variable by 1
+  fi                                                                    # End the If logic
+  if STATUS == WRONG                                                    # If an incorrect answer is given then these actions will occur
+    show text "Incorrect"                                               # Reports an incorrect answer
+  fi                                                                    # end of if logic
+  delay 1000
+  clear screen
+  delay 1000
+  save TASKNAME STATUS RT &letter                                       # saves the taskname, if correct response is entered, reaction times and 
+ # final score of &letter (which is the amount of correct answered given -  not really needed, but included just incase
+
+
+# end of the first defined task
+
+
+# @1 sum1   @2 answer2 @3 sum2 @4 answer2
+table practice_trial_sum                                                # The second practice block table
+  "( 1 x 6 ) - 2 =" "4" "7 + ( 2 x 3 ) = " "13"
+  "( 7 + 5 ) - 1 = " "11" "8 x ( 9 - 5 ) =" "32"
+  "2 x ( 9 + 1 ) = " "20" "( 5 x 2 ) - 3 = " "7"
+
+task sum_practice                                                       # second practice block task
+  table practice_trial_sum
+  keys 1 2 3 4 5 6 7 8 9 0 enter space                                  # defines the keys that we allow to be read
+  show text @1                                                          # We show a sum instead of a letter
+  readkey 11 10000                                                      # press one of the previously defined keys (11 = enter key, but other keys named will work) to move to the next screen
+  clear screen
+  delay 100
+  show text "Type the answer and press Enter" -200 -200   0 255 0
+  text color white
+  readkeys option size 2
+  readkeys option placeholders 40 40
+  readkeys @2 10000                                                     # the answer will be from the 2nd column of the table
+  clear screen
+  if STATUS == CORRECT
+    set &trial increase 1                                               # count for how many sums answered correctly
+  fi
+  delay 500
+  save TASKNAME STATUS RT                                               # saves taskname, if the sum was answered correctly, and time taken
+  show text @3                                                          # show our second sum
+  readkey 11 10000
+  clear screen
+  delay 100
+  show text "Type the answer and press Enter" -200 -200   0 255 0
+  text color white
+  readkeys option size 2
+  readkeys option placeholders 40 40
+  readkeys @4 10000
+  clear screen
+  if STATUS == CORRECT
+    set &trial increase 1
+  fi
+  if &trial == 2                                                        # if both sums correct then this function will work
+    show text "Correct Trial"                                           # "correct trial" is both sums being correct
+    set &sum increase 1                                                 # notes down how many correct trials there are incase they are wanted
+  fi
+  if &trial != 2                                                        # 1 or 0 sums correct
+    show text "Incorrect Trial"
+  fi
+  delay 1000
+  clear screen
+  delay 500
+  save TASKNAME STATUS RT &trial
+  set &trial 0                                                          # resets counter checking if both sums are correct so next trial will be fresh
+# it is possible to use %trial instead of &trial, as %trial will automatically set to 0 after every complete trial
+# however my personal preference is to use global variables that do not reset unless stated. Feel free
+# to change the variable and remove the above line if you wish to use a local variable instead
+
+
+
+# This is where we start to combine the sums and letters, they have been listed in the table in
+# chronological order of when they are being used (e.g. sum - letter - sum - letter - letter recall)
+# @1 sum1   @2 answer1 @3 letter1 @4 sum2 @5 answer2 @6 letter2 @7 recall
+table practice_full
+  "8 + ( 2 x 1 ) = " "10" "f" "( 4 + 1 ) - 3 = " "2" "k" "fk"
+  "( 9 - 3 ) / 2 = " "3" "r" "4 + ( 3 - 1 ) = " "6" "y" "ry"
+  "7 x ( 6 - 4 ) = " "14" "l" "( 4 + 2 ) x 2 = " "12" "h" "lh"
+  "( 5 x 4 ) / 2 = " "10" "k" "1 x ( 4 + 5 ) = " "9" "p" "kp"
+  "1 + ( 2 x 7 ) = " "15" "y" "( 7 x 4 ) - 3 = " "25" "q" "yq"
+
+
+task full_practice
+  table practice_full
+  keys 1 2 3 4 5 6 7 8 9 0 enter space
+  show text @1
+  readkey 11 10000
+  clear screen
+  delay 100
+  show text "Type the answer and press Enter" -200 -200   0 255 0
+  text color white
+  readkeys option size 2
+  readkeys option placeholders 40 40
+  readkeys @2 10000
+  save TASKNAME STATUS RT
+  if STATUS == CORRECT
+    set &span2 increase 1
+  fi
+  clear screen
+  show text @3
+  delay 800
+  clear screen
+  show text @4
+  readkey 11 10000
+  clear screen
+  delay 100
+  show text "Type the answer and press Enter" -200 -200   0 255 0
+  text color white
+  readkeys option size 2
+  readkeys option placeholders 40 40
+  readkeys @5 10000
+  save TASKNAME STATUS RT
+  if STATUS == CORRECT
+    set &span2 increase 1
+  fi
+  clear screen
+  show text @6
+  delay 800
+  clear screen
+  delay 100
+  show text  "Type the letters and press Enter" -200 -200   0 255 0
+  text color white
+  readkeys option size 2
+  readkeys option placeholders 40 40
+  readkeys @7 100000
+  save TASKNAME STATUS RT
+  if STATUS == CORRECT
+    set &span2 increase 1
+  fi
+  clear screen
+  if &span2 == 3 # We have been increasing &span2 for each both correct sums, but also added an extra for
+    # the correct letters, we only show "Correct Trial" if all sums and the letter recall are correct, otherwise
+    # the trial is Incorrect
+    show text "Correct Trial"
+    set &prac increase 1
+    save &span2
+  fi
+  if &span2 != 3
+    show text "Incorrect Trial"
+    save &span2
+  fi
+  delay 1000
+  clear screen
+  delay 1000
+  set &span2 0
+
+
+
+# now we start defining the actual span task, the span tasks have their own global variables that keep
+# track of how many correct sums and sum/letters, this will present totals for you in the data file
+# so you do not need to manually sum up the correct/incorrect answers yourself
+
+
+
+#@1sum1 @2ans1 @3let1 @4sum2 @5ans2 @6let2 @7sum3 @8ans3 @9let3 @10recall
+table span3t
+  "( 2 x 2 ) - 1 = " "3" "k" "( 4 / 2 ) + 3 = " "5" "t" "4 x ( 8 - 2 ) = " "24" "n" "ktn"
+  "1 + ( 3 x 2 ) = " "7" "q" "4 x ( 2 + 2 ) = " "16" "h" "( 9 - 1 ) x 2 = " "16" "s" "qhs"
+  "3 x ( 8 / 4 ) = " "6" "y" "( 5 - 2 ) + 4 = " "7" "k" "6 - ( 8 / 2 ) = " "2" "r" "ykr"
+
+task span3
+  table span3t
+  keys 1 2 3 4 5 6 7 8 9 0 enter
+  show text @1
+  readkey 11 10000
+  clear screen
+  delay 100
+  show text "Type the answer and press Enter" -200 -200   0 255 0
+  text color white
+  readkeys option size 2
+  readkeys option placeholders 40 40
+  readkeys @2 10000
+  save TASKNAME STATUS RT
+  if STATUS == CORRECT
+    set &span3 increase 1                   # counting how many answeres are correct (includes letters later)
+    set &sumscore1 increase 1               # counting how many sums are correct
+  fi
+  clear screen
+  show text @3
+  delay 800
+  clear screen
+  show text @4
+  readkey 11 10000
+  clear screen
+  delay 100
+  show text "Type the answer and press Enter" -200 -200   0 255 0
+  text color white
+  readkeys option size 2
+  readkeys option placeholders 40 40
+  readkeys @5 10000
+  save TASKNAME STATUS RT
+  if STATUS == CORRECT
+    set &span3 increase 1                   # still tallying how many correct answers
+    set &sumscore1 increase 1               # still tallying how many correct sums
+  fi
+  clear screen
+  show text @6
+  delay 800
+  clear screen
+  show text @7
+  readkey 11 10000
+  clear screen
+  delay 100
+  show text "Type the answer and press Enter" -200 -200   0 255 0
+  text color white
+  readkeys option size 2
+  readkeys option placeholders 40 40
+  readkeys @8 10000
+  save TASKNAME STATUS RT
+  if STATUS == CORRECT
+    set &span3 increase 1
+    set &sumscore1 increase 1
+  fi
+  clear screen
+  show text @9
+  delay 800
+  clear screen
+  delay 100
+  show text  "Type the letters and press Enter" -200 -200   0 255 0   #letter string input
+  text color white
+  readkeys option size 3
+  readkeys option placeholders 40 40
+  readkeys @10 100000
+  save TASKNAME STATUS RT
+  if STATUS == CORRECT
+    set &span3 increase 1                               # increasing our correct answer count
+    set &letterscore1 increase 1                        # counting how many letter series are correctly answered
+    set &letterscore increase 3                         # this works out our OSpan letter score
+    save &letterscore                                   #saves this score so we can tally all the trials
+  fi
+  clear screen
+  if &span3 == 4                                        # if all sums and letters correct then we should have 4 here
+    show text "Correct Trial"
+    save &span3                                         # save the score so our data automatically has a sum for how many correct answers
+    set &absolute increase 3                            # this works out our OSpan absolute score
+    save &absolute                                      # save this score so we can tally all the trials
+  fi
+  if &span3 != 4                                        # if a sum or letter string was incorrectly answered
+    show text "Incorrect Trial"
+    save &span3                                         # same use as in the if == 4 version
+  fi
+  delay 1000
+  clear screen
+  delay 1000
+  set &span3 0                                          # reset the value so we can reuse the variable for the next run (of 3)
+  save &sumscore1 &letterscore1                         # save the amount of correct sums and letter strings individually
+
+
+
+#@1sum1 @2ans1 @3let1 @4sum2 @5ans2 @6let2 @7sum3 @8ans3 @9let3 @10sum4 @11ans4 @12let4 @13recall
+table span4t
+ "6 / ( 2 + 1 ) =" "2" "h" "2 x ( 4 - 3 ) =" "2" "y" "( 9 x 3 ) - 1 =" "26" "j" "( 7 + 3 ) - 5 =" "5" "s" "hyjs"
+"( 2 + 2 ) - 3 =" "1" "t" "( 4 x 5 ) - 7 =" "13" "n" "7 - ( 6 / 3 ) =" "5" "q" "4 x ( 3 + 2 ) =" "20" "f" "tnqf"
+"8 x ( 6 / 2 ) =" "24" "y" "5 - ( 2 + 2 ) =" "1" "f" "( 3 x 3 ) - 4 =" "5" "k" "( 9 / 1 ) - 4 =" "5" "r" "yfkr"
+
+task span4
+  table span4t
+  keys 1 2 3 4 5 6 7 8 9 0 enter
+  show text @1
+  readkey 11 10000
+  clear screen
+  delay 100
+  show text "Type the answer and press Enter" -200 -200   0 255 0
+  text color white
+  readkeys option size 2
+  readkeys option placeholders 40 40
+  readkeys @2 10000
+  save TASKNAME STATUS RT
+  if STATUS == CORRECT
+    set &span4 increase 1
+    set &sumscore2 increase 1
+  fi
+  clear screen
+  show text @3
+  delay 800
+  clear screen
+  show text @4
+  readkey 11 10000
+  clear screen
+  delay 100
+  show text "Type the answer and press Enter" -200 -200   0 255 0
+  text color white
+  readkeys option size 2
+  readkeys option placeholders 40 40
+  readkeys @5 10000
+  save TASKNAME STATUS RT
+  if STATUS == CORRECT
+    set &span4 increase 1
+    set &sumscore2 increase 1
+  fi
+  clear screen
+  show text @6
+  delay 800
+  clear screen
+  show text @7
+  readkey 11 10000
+  clear screen
+  delay 100
+  show text "Type the answer and press Enter" -200 -200   0 255 0
+  text color white
+  readkeys option size 2
+  readkeys option placeholders 40 40
+  readkeys @8 10000
+  save TASKNAME STATUS RT
+  if STATUS == CORRECT
+    set &sumscore2 increase 1
+    set &span4 increase 1
+  fi
+  clear screen
+  show text @9
+  delay 800
+  clear screen
+  show text @10
+  readkey 11 10000
+  clear screen
+  delay 100
+  show text "Type the answer and press Enter" -200 -200   0 255 0
+  text color white
+  readkeys option size 2
+  readkeys option placeholders 40 40
+  readkeys @11 10000
+  save TASKNAME STATUS RT
+  if STATUS == CORRECT
+    set &span4 increase 1
+    set &sumscore2 increase 1
+  fi
+  clear screen
+  show text @12
+  delay 800
+  clear screen
+  delay 100
+  show text  "Type the letters and press Enter" -200 -200   0 255 0
+  text color white
+  readkeys option size 4
+  readkeys option placeholders 40 40
+  readkeys @13 100000
+  save TASKNAME STATUS RT
+  if STATUS == CORRECT
+    set &span4 increase 1
+    set &letterscore2 increase 1
+    set &letterscore increase 4
+    save &letterscore
+  fi
+  clear screen
+  if &span4 == 5
+    show text "Correct Trial"
+    save &span4
+    set &absolute increase 4
+    save &absolute
+  fi
+  if &span4 != 5
+    show text "Incorrect Trial"
+    save &span4
+  fi
+  delay 1000
+  clear screen
+  delay 1000
+  set &span4 0
+  save &sumscore2 &letterscore2
+
+#@1sum1 @2ans1 @3let1 @4sum2 @5ans2 @6let2 @7sum3 @8ans3 @9let3 @10sum4 @11ans4 @12let4 @13sum5 @14ans5 @15let5 @16recall
+table span5t
+  "7 + ( 3 / 1 ) =" "10" "k" "( 3 - 2 ) + 6 =" "7" "s" "6 + ( 2 x 5 ) =" "16" "y" "3 x ( 1 + 1 ) =" "6" "t" "7 + ( 9 - 4 ) =" "12" "h" "ksyth" 
+  "4 x ( 6 / 2 ) =" "12" "t" "( 9 + 3 ) / 4 =" "3" "q" "5 + ( 8 / 4 ) =" "7" "s" "2 x ( 7 + 1 ) =" "16" "r" "( 8 x 3 ) + 2 =" "26" "f" "tqsrf" 
+  "( 8 x 2 ) + 3 =" "19" "s" "( 4 + 9 ) x 2 =" "26" "p" "( 2 / 2 ) x 4 =" "4" "n" "5 + ( 4 + 1 ) =" "10" "k" "( 3 x 7 ) - 2 =" "19" "l" "spnkl" 
+
+task span5
+  table span5t
+  keys 1 2 3 4 5 6 7 8 9 0 enter
+  show text @1
+  readkey 11 10000
+  clear screen
+  delay 100
+  show text "Type the answer and press Enter" -200 -200   0 255 0
+  text color white
+  readkeys option size 2
+  readkeys option placeholders 40 40
+  readkeys @2 10000
+  save TASKNAME STATUS RT
+  if STATUS == CORRECT
+    set &span5 increase 1
+    set &sumscore3 increase 1
+  fi
+  clear screen
+  show text @3
+  delay 800
+  clear screen
+  show text @4
+  readkey 11 10000
+  clear screen
+  delay 100
+  show text "Type the answer and press Enter" -200 -200   0 255 0
+  text color white
+  readkeys option size 2
+  readkeys option placeholders 40 40
+  readkeys @5 10000
+  save TASKNAME STATUS RT
+  if STATUS == CORRECT
+    set &span5 increase 1
+    set &sumscore3 increase 1
+  fi
+  clear screen
+  show text @6
+  delay 800
+  clear screen
+  show text @7
+  readkey 11 10000
+  clear screen
+  delay 100
+  show text "Type the answer and press Enter" -200 -200   0 255 0
+  text color white
+  readkeys option size 2
+  readkeys option placeholders 40 40
+  readkeys @8 10000
+  save TASKNAME STATUS RT
+  if STATUS == CORRECT
+    set &span5 increase 1
+    set &sumscore3 increase 1
+  fi
+  clear screen
+  show text @9
+  delay 800
+  clear screen
+  show text @10
+  readkey 11 10000
+  clear screen
+  delay 100
+  show text "Type the answer and press Enter" -200 -200   0 255 0
+  text color white
+  readkeys option size 2
+  readkeys option placeholders 40 40
+  readkeys @11 10000
+  save TASKNAME STATUS RT
+  if STATUS == CORRECT
+    set &span5 increase 1
+    set &sumscore3 increase 1
+  fi
+  clear screen
+  show text @12
+  delay 800
+  clear screen
+  show text @13
+  readkey 11 10000
+  clear screen
+  delay 100
+  show text "Type the answer and press Enter" -200 -200   0 255 0
+  text color white
+  readkeys option size 2
+  readkeys option placeholders 40 40
+  readkeys @14 10000
+  save TASKNAME STATUS RT
+  if STATUS == CORRECT
+    set &span5 increase 1
+    set &sumscore3 increase 1
+  fi
+  clear screen
+  show text @15
+  delay 800
+  clear screen
+  delay 100
+  show text  "Type the letters and press Enter" -200 -200   0 255 0
+  text color white
+  readkeys option size 5
+  readkeys option placeholders 40 40
+  readkeys @16 100000
+  save TASKNAME STATUS RT
+  if STATUS == CORRECT
+    set &span5 increase 1
+    set &letterscore3 increase 1
+    set &letterscore increase 5
+    save &letterscore
+  fi
+  clear screen
+  if &span5 == 6
+    show text "Correct Trial"
+    save &span5
+    set &absolute increase 5
+    save &absolute
+  fi
+  if &span5 != 6
+    show text "Incorrect Trial"
+    save &span5
+  fi
+  delay 1000
+  clear screen
+  delay 1000
+  set &span5 0
+  save &sumscore3 &letterscore3
+
+
+
+
+#@1sum1 @2ans1 @3let1 @4sum2 @5ans2 @6let2 @7sum3 @8ans3 @9let3 @10sum4 @11ans4 @12let4 @13sum5 @14ans5 @15let5 @16sum6 @17ans6 @18let6 @19recall
+table span6t
+"2 x ( 4 + 5 ) =" "18" "s" "8 / ( 2 x 4 ) =" "1" "t" "1 + ( 8 x 3 ) =" "25" "f" "6 - ( 5 - 2 ) =" "3" "n" "( 4 x 4 ) + 6 =" "22" "q" "( 7 - 3 ) x 3 =" "12" "r" "stfnqr" 
+"( 8 / 2 ) x 4 =" "16" "q" "9 - ( 9 - 3 ) =" "3" "y" "( 7 x 3 ) - 9 =" "12" "k" "1 + ( 8 - 5 ) =" "4" "h" "3 x ( 7 - 2 ) =" "15" "t" "( 6 + 7 ) x 2 =" "26" "l" "qykhtl" 
+"8 x ( 7 - 4 ) =" "24" "h" "2 + ( 6 / 3 ) =" "4" "s" "( 7 - 4 ) x 5 =" "15" "y" "8 + ( 5 - 2 ) =" "11" "j" "( 4 + 8 ) / 2 =" "6" "q" "5 + ( 3 x 3 ) =" "14" "f" "hsyjqf" 
+
+task span6
+  table span6t
+  keys 1 2 3 4 5 6 7 8 9 0 enter
+  show text @1
+  readkey 11 10000
+  clear screen
+  delay 100
+  show text "Type the answer and press Enter" -200 -200   0 255 0
+  text color white
+  readkeys option size 2
+  readkeys option placeholders 40 40
+  readkeys @2 10000
+  save TASKNAME STATUS RT
+  if STATUS == CORRECT
+    set &span6 increase 1
+    set &sumscore4 increase 1
+  fi
+  clear screen
+  show text @3
+  delay 800
+  clear screen
+  show text @4
+  readkey 11 10000
+  clear screen
+  delay 100
+  show text "Type the answer and press Enter" -200 -200   0 255 0
+  text color white
+  readkeys option size 2
+  readkeys option placeholders 40 40
+  readkeys @5 10000
+  save TASKNAME STATUS RT
+  if STATUS == CORRECT
+    set &span6 increase 1
+    set &sumscore4 increase 1
+  fi
+  clear screen
+  show text @6
+  delay 800
+  clear screen
+  show text @7
+  readkey 11 10000
+  clear screen
+  delay 100
+  show text "Type the answer and press Enter" -200 -200   0 255 0
+  text color white
+  readkeys option size 2
+  readkeys option placeholders 40 40
+  readkeys @8 10000
+  save TASKNAME STATUS RT
+  if STATUS == CORRECT
+    set &span6 increase 1
+    set &sumscore4 increase 1
+  fi
+  clear screen
+  show text @9
+  delay 800
+  clear screen
+  show text @10
+  readkey 11 10000
+  clear screen
+  delay 100
+  show text "Type the answer and press Enter" -200 -200   0 255 0
+  text color white
+  readkeys option size 2
+  readkeys option placeholders 40 40
+  readkeys @11 10000
+  save TASKNAME STATUS RT
+  if STATUS == CORRECT
+    set &span6 increase 1
+    set &sumscore4 increase 1
+  fi
+  clear screen
+  show text @12
+  delay 800
+  clear screen
+  show text @13
+  readkey 11 10000
+  clear screen
+  delay 100
+  show text "Type the answer and press Enter" -200 -200   0 255 0
+  text color white
+  readkeys option size 2
+  readkeys option placeholders 40 40
+  readkeys @14 10000
+  save TASKNAME STATUS RT
+  if STATUS == CORRECT
+    set &span6 increase 1
+    set &sumscore4 increase 1
+  fi
+  clear screen
+  show text @15
+  delay 800
+  clear screen
+  show text @16
+  readkey 11 10000
+  clear screen
+  delay 100
+  show text "Type the answer and press Enter" -200 -200   0 255 0
+  text color white
+  readkeys option size 2
+  readkeys option placeholders 40 40
+  readkeys @17 10000
+  save TASKNAME STATUS RT
+  if STATUS == CORRECT
+    set &span6 increase 1
+    set &sumscore4 increase 1
+  fi
+  clear screen
+  show text @18
+  delay 800
+  clear screen
+  delay 100
+  show text  "Type the letters and press Enter" -200 -200   0 255 0
+  text color white
+  readkeys option size 6
+  readkeys option placeholders 40 40
+  readkeys @19 100000
+  save TASKNAME STATUS RT
+  if STATUS == CORRECT
+    set &span6 increase 1
+    set &letterscore4 increase 1
+    set &letterscore increase 6
+    save &letterscore
+  fi
+  clear screen
+  if &span6 == 7
+    show text "Correct Trial"
+    save &span6
+    set &absolute increase 6
+    save &absolute
+  fi
+  if &span6 != 7
+    show text "Incorrect Trial"
+    save &span6
+  fi
+  delay 1000
+  clear screen
+  delay 1000
+  set &span6 0
+  save &sumscore4 &letterscore4
+
+
+
+
+#@1sum1 @2ans1 @3let1 @4sum2 @5ans2 @6let2 @7sum3 @8ans3 @9let3 @10sum4 @11ans4 @12let4 @13sum5 @14ans5 @15let5 @16sum6 @17ans6 @18let7 @19sum7 @20ans7 @21let7 @22recall
+table span7t
+"6 x ( 2 + 5 ) =" "42" "y" "4 / ( 2 - 1 ) =" "4" "j" "6 + ( 9 / 3 ) =" "9" "l" "( 4 x 7 ) / 2 =" "14" "p" "( 1 x 5 ) + 4 =" "9" "f" "4 - ( 6 / 3 ) =" "1" "t" "( 8 / 4 ) + 7 =" "9" "s" "yjlpfts"
+"7 - ( 4 + 2 ) =" "1" "q" "5 + ( 7 x 2 ) =" "19" "f" "( 1 + 1 ) x 6 =" "12" "k" "7 + ( 4 / 2 ) =" "9" "y" "9 / ( 3 x 1 ) =" "3" "h" "( 5 + 1 ) - 2 =" "4" "r" "6 x ( 4 - 2 ) =" "12" "t" "qfkyhrt"
+"( 8 - 3 ) x 2 =" "10" "f" "( 5 + 1 ) - 4 =" "2" "t" "7 + ( 6 x 4 ) =" "31" "s" "( 4 + 4 ) - 5 =" "3" "p" "6 x ( 4 - 1 ) =" "18" "r" "( 9 + 7 ) / 4 =" "4" "y" "2 + ( 3 - 2 ) =" "3" "l" "ftspryl"
+
+task span7
+  table span7t
+  keys 1 2 3 4 5 6 7 8 9 0 enter
+  show text @1
+  readkey 11 10000
+  clear screen
+  delay 100
+  show text "Type the answer and press Enter" -200 -200   0 255 0
+  text color white
+  readkeys option size 2
+  readkeys option placeholders 40 40
+  readkeys @2 10000
+  save TASKNAME STATUS RT
+  if STATUS == CORRECT
+    set &span7 increase 1
+    set &sumscore5 increase 1
+  fi
+  clear screen
+  show text @3
+  delay 800
+  clear screen
+  show text @4
+  readkey 11 10000
+  clear screen
+  delay 100
+  show text "Type the answer and press Enter" -200 -200   0 255 0
+  text color white
+  readkeys option size 2
+  readkeys option placeholders 40 40
+  readkeys @5 10000
+  save TASKNAME STATUS RT
+  if STATUS == CORRECT
+    set &span7 increase 1
+    set &sumscore5 increase 1
+  fi
+  clear screen
+  show text @6
+  delay 800
+  clear screen
+  show text @7
+  readkey 11 10000
+  clear screen
+  delay 100
+  show text "Type the answer and press Enter" -200 -200   0 255 0
+  text color white
+  readkeys option size 2
+  readkeys option placeholders 40 40
+  readkeys @8 10000
+  save TASKNAME STATUS RT
+  if STATUS == CORRECT
+    set &span7 increase 1
+    set &sumscore5 increase 1
+  fi
+  clear screen
+  show text @9
+  delay 800
+  clear screen
+  show text @10
+  readkey 11 10000
+  clear screen
+  delay 100
+  show text "Type the answer and press Enter" -200 -200   0 255 0
+  text color white
+  readkeys option size 2
+  readkeys option placeholders 40 40
+  readkeys @11 10000
+  save TASKNAME STATUS RT
+  if STATUS == CORRECT
+    set &span7 increase 1
+    set &sumscore5 increase 1
+  fi
+  clear screen
+  show text @12
+  delay 800
+  clear screen
+  show text @13
+  readkey 11 10000
+  clear screen
+  delay 100
+  show text "Type the answer and press Enter" -200 -200   0 255 0
+  text color white
+  readkeys option size 2
+  readkeys option placeholders 40 40
+  readkeys @14 10000
+  save TASKNAME STATUS RT
+  if STATUS == CORRECT
+    set &span7 increase 1
+    set &sumscore5 increase 1
+  fi
+  clear screen
+  show text @15
+  delay 800
+  clear screen
+  show text @16
+  readkey 11 10000
+  clear screen
+  delay 100
+  show text "Type the answer and press Enter" -200 -200   0 255 0
+  text color white
+  readkeys option size 2
+  readkeys option placeholders 40 40
+  readkeys @17 10000
+  save TASKNAME STATUS RT
+  if STATUS == CORRECT
+    set &span7 increase 1
+    set &sumscore5 increase 1
+  fi
+  clear screen
+  show text @18
+  delay 800
+  clear screen
+  show text @19
+  readkey 11 10000
+  clear screen
+  delay 100
+  show text "Type the answer and press Enter" -200 -200   0 255 0
+  text color white
+  readkeys option size 2
+  readkeys option placeholders 40 40
+  readkeys @20 10000
+  save TASKNAME STATUS RT
+  if STATUS == CORRECT
+    set &span7 increase 1
+    set &sumscore5 increase 1
+  fi
+  clear screen
+  show text @21
+  delay 800
+  clear screen
+  delay 100
+  show text  "Type the letters and press Enter" -200 -200   0 255 0
+  text color white
+  readkeys option size 7
+  readkeys option placeholders 40 40
+  readkeys @22 100000
+  save TASKNAME STATUS RT
+  if STATUS == CORRECT
+    set &span7 increase 1
+    set &letterscore5 increase 1
+    set &letterscore increase 7
+    save &letterscore
+  fi
+  clear screen
+  if &span7 == 8
+    show text "Correct Trial"
+    save &span7
+    set &absolute increase 7
+    save &absolute
+  fi
+  if &span7 != 8
+    show text "Incorrect Trial"
+    save &span7
+  fi
+  delay 1000
+  clear screen
+  delay 1000
+  set &span7 0
+  save &sumscore5 &letterscore5
+
+
+# all the span tasks are defined, now we are making a minitask that will present feedback. A feedback
+# function could be used when defining blocks, but as the task blocks are randomized it is easier to
+# create this task so we can make sure it only appears after all tasks are done (see blockorder 
+# further down to see how it is formatted)
+
+
+
+task complete
+  show text "The task is now complete, your OSpan score is:" 0 -50              # shows this text slightly left-aligned
+  show text  &absolute  0 50                                                    # shows the absolute span score next to the above text
+  delay 5000        
+  clear screen
+  delay 100
+  show text "Your total letter score is:" 0 -50
+  show text &letterscore 0 50                                                   # same function as above but we use the letterspan score here
+  delay 5000
+  save &absolute &letterscore
+
+# as this task appears at the end of the blocks we save the two scores that are most useful one more time
+# so the end of the data file will always show the total absolute and letterspan scores for ease of access
+
+
+# Here we describe how the blocks work - the test blocks all show an introduction screen which requires
+# a keypress to move on to the next screen which is a description of how the task works, another keypress
+# then starts the task. Feedback is given at the end to let the participant know how many trials they
+# got correct in total.
+
+block test1
+  bitmap Practice_instruction1
+  wait_for_key
+  bitmap Letters
+  wait_for_key
+  tasklist
+    letter_practice 5 all_before_repeat #all 5 stimuli are used in a random order, and will not repeat
+  end
+  feedback
+    text  0 -50 &letter ; prefix "Correct:" ; postfix " out of 5."
+    text 0 150 "Press Space to continue"
+  end
+
+block test2
+  bitmap Practice_instruction2
+  wait_for_key
+  bitmap Sums
+  wait_for_key
+  tasklist
+    sum_practice 3 all_before_repeat
+  end
+  feedback
+    text  0 -50 &sum ; prefix "Correct:" ; postfix " out of 5."
+    text 0 150 "Press Space to continue"
+  end
+
+block test3
+  bitmap Practice_instruction3
+  wait_for_key
+  bitmap Task_Outline
+  wait_for_key
+  tasklist
+    full_practice 5 all_before_repeat
+  end
+  feedback
+    text  0 -50 &prac ; prefix "Correct:" ; postfix " out of 5."
+    text 0 150 "Press Space to continue"
+  end
+
+# These are all experimental blocks below, a generic instruction is shown for all of them
+
+block span3
+  bitmap Instruction
+  wait_for_key
+  tasklist
+    span3 3 all_before_repeat
+  end
+  feedback
+    text  0 -100 &sumscore1 ; prefix "Sums correct:" ; postfix " out of 9."
+    text  0 0 &letterscore1 ; prefix "Letters correct:" ; postfix " out of 3."
+    text 0 150 "Press Space to continue"
+  end
+
+block span4
+  bitmap Instruction
+  wait_for_key
+  tasklist
+    span4 3 all_before_repeat
+  end
+  feedback
+    text  0 -100 &sumscore2 ; prefix "Sums correct:" ; postfix " out of 12."
+    text  0 0 &letterscore2 ; prefix "Letters correct:" ; postfix " out of 3."
+    text 0 150 "Press Space to continue"
+  end
+
+block span5
+  bitmap Instruction
+  wait_for_key
+  tasklist
+    span5 3 all_before_repeat
+  end
+  feedback
+    text  0 -100 &sumscore3 ; prefix "Sums correct:" ; postfix " out of 15."
+    text  0 0 &letterscore3 ; prefix "Letters correct:" ; postfix " out of 3."
+    text 0 150 "Press Space to continue"
+  end
+
+block span6
+  bitmap Instruction
+  wait_for_key
+  tasklist
+    span6 3 all_before_repeat
+  end
+  feedback
+    text  0 -100 &sumscore4 ; prefix "Sums correct:" ; postfix " out of 18."
+    text  0 0 &letterscore4 ; prefix "Letters correct:" ; postfix " out of 3."
+    text 0 150 "Press Space to continue"
+  end
+
+block span7
+  bitmap Instruction
+  wait_for_key
+  tasklist
+    span7 3 all_before_repeat
+  end
+  feedback
+    text  0 -100 &sumscore5 ; prefix "Sums correct:" ; postfix " out of 21."
+    text  0 0 &letterscore5 ; prefix "Letters correct:" ; postfix " out of 3."
+    text 0 150 "Press Space to continue"
+  end
+
+# we're showing our final feedback screen here
+
+block complete                                   
+  tasklist
+    complete 1 all_before_repeat
+  end
+
+# Below are the 10 blockorders. Each experimental block was ordered in accordance to a balanced Latin
+# Square to ensure each task appears in the same order position twice and is following, and prior to,
+# a different task every time.
+
+blockorder
+  test1
+  test2
+  test3
+  span3
+  span7
+  span4
+  span6
+  span5
+  complete
+
+blockorder
+  test1
+  test2
+  test3
+  span4
+  span3
+  span5
+  span7
+  span6
+  complete
+
+blockorder
+  test1
+  test2
+  test3
+  span5
+  span4
+  span6
+  span3
+  span7
+  complete
+
+blockorder
+  test1
+  test2
+  test3
+  span6
+  span5
+  span7
+  span4
+  span3
+  complete
+
+blockorder
+  test1
+  test2
+  test3
+  span7
+  span6
+  span3
+  span5
+  span4
+  complete
+
+blockorder
+  test1
+  test2
+  test3
+  span5
+  span6
+  span4
+  span7
+  span3
+  complete
+
+blockorder
+  test1
+  test2
+  test3
+  span6
+  span7
+  span5
+  span3
+  span4
+  complete
+
+blockorder
+  test1
+  test2
+  test3
+  span7
+  span3
+  span6
+  span4
+  span5
+  complete
+
+blockorder
+  test1
+  test2
+  test3
+  span3
+  span4
+  span7
+  span5
+  span6
+  complete
+
+blockorder
+  test1
+  test2
+  test3
+  span4
+  span5
+  span3
+  span6
+  span7
+  complete
+
+
+# Thank you for considering this version of the Automated Operation Span - free recall edition
+# coded by Alex Baxendale
+# please feel free to use this code and the included bitmap files in your research as you see fit
