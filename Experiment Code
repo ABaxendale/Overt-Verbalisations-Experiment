@@ -1,0 +1,201 @@
+l: start
+t: info
+q: First will ask you some basic demographic questions.
+
+l: age
+t: textline
+q: How old are you?
+- {min=18,max=100}
+
+l: gender
+t: radio
+q: What is your gender?
+- Male
+- Female
+- Other
+
+l: nationality
+t: textline
+q: What is your nationality?
+- 
+
+l: education
+t: radio
+q: What is the highest level of education you have completed?
+- Primary school (To age 11)
+- High School (GCSEs or equivalent)
+- College / 6th Form (A-Levels or equivalent)
+- University undergraduate program
+- University post-graduate program
+- Doctoral degree
+
+l: hearing
+t: radio
+q: Do you have normal, or corrected to normal hearing? (i.e. will you be able to hear all the sounds clearly?)
+- Yes
+- No
+
+l: vision
+t: radio
+q: Do you have normal, or corrected to normal vision? (i.e. will you be able to see all the text clearly?)
+- Yes
+- No
+
+l: LearningDifficulties
+t: textline
+q: Can you list any learning or math disabilities you have below (otherwise write No or N/A)
+- 
+
+
+l: next7
+t: info
+q: Next we will do a short math proficiency and expertise test. 
+
+# This is a math expertise questionnaire adapted from "Guthrie &amp; Vallée-Tourangeau, (2018)" used
+# to measure approximate familiarity and proficiency with math in adults
+
+
+l: Q1
+t: radio
+q: What grade did you get in high school math?
+- {score=0} No grade
+- {score=1} F to D
+- {score=2} C
+- {score=3} B
+- {score=4} A or higher
+
+l: Q2
+t: radio
+q: Did you do math at college level?
+-  Yes
+-  No
+
+l:
+t: jump
+- if $Q2 !=1 then goto Q3
+
+l: QCollege
+t: radio
+q: What grade did you get in college math?
+- {score=0} No grade
+- {score=1} F to D
+- {score=2} C
+- {score=3} B
+- {score=4} A or higher
+
+l: Q3
+t: radio
+q: Do you use basic math in your current studies or job? e.g. addition, subtraction
+- {score=0} No
+- {score=1} Very rarely
+- {score=2} Frequently
+- {score=3} Daily
+
+l: Q4
+t: radio
+q: Do you use advanced math in your current studies or job? e.g. algebra, statistics
+- {score=0} No
+- {score=1} Very rarely
+- {score=2} Frequently
+- {score=3} Daily
+
+l: scores
+t: set
+- sum $Q*
+
+l: feedback
+t: info
+q:  Congratulations, you have finished!
+Your math expertise is: {$scores} <br>
+
+# Math Anxiety scale starts here 
+
+l: AMASInfo
+t: info
+q: Next is a short math anxiety test. Please try to answer as many questions as you can and as  truthfully as possible.
+
+scale: amas_scale
+- Low Anxiety
+- Some Anxiety
+- Moderate Anxiety
+- Quite a bit of Anxiety
+- High Anxiety
+
+l: amas
+t: scale amas_scale
+o: width 50%
+q: Please rate each item below in terms of how anxious you would feel during the event specified.<br>
+- Having to use the tables in the back of a mathematics book.
+- Thinking about an upcoming mathematics test one day before.
+- Watching a teacher work an algebraic equation on the blackboard.
+- Taking an examination in a mathematics course.
+- Being given a homework assignment of many difficult problems which is due the next class meeting.
+- Listening to a lecture in mathematics class.
+- Listening to another student explain a mathematics formula.
+- Being given a “pop” quiz in a mathematics class.
+- Starting a new chapter in a mathematics book.
+
+l: amas_score
+t: set
+- sum $amas
+
+l: amas_feedback
+t: info
+q: Scores on the Abbreviated Math Anxiety Scale (AMAS) can range from 9 to 45.<br>
+Your score on the AMAS is {$amas_score}.
+
+
+l: next1
+t: info
+q: Next is a memory test.
+
+#verbal WM with numbers
+
+l: OSpan
+t: experiment
+- Operation_Span
+
+
+l: next3
+t: info
+q: Next is a simple memory test.
+
+#verbal WM no numbers
+
+l: nBack
+t: experiment
+- N-Back_3
+
+#visuospatial WM
+
+l: next2
+t: info
+q: Next is a visual memory test.
+
+l: Corsi
+t: experiment
+- Corsi
+
+l: next4
+t: info
+q: Next isa test of inhibition.
+
+l: Stroop
+t: experiment
+- Stroop
+
+l: next5
+t: info
+q: The final task will now begin
+
+l: ExperimentalBlock
+t: info
+q: Please tell the researcher which group you will be assigned to (click continue to find out) e.g. Silent, Speaking only the equations, or speaking everything out loud
+
+l: MathTask
+t: experiment
+- Math_Task
+
+l: end
+t: info
+q: The experiment is now complete
